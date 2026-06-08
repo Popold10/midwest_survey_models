@@ -169,12 +169,16 @@ def send_email(subject, body):
     msg["From"] = SMTP_FROM
     msg["To"] = SMTP_TO
     msg.set_content(body)
-    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=30) as s:
+    if SMTP_PORT == 465:
+        s = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=30)
+    else:
+        s = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=30)
         if SMTP_TLS:
             s.starttls()
-        if SMTP_USER:
-            s.login(SMTP_USER, SMTP_PASS)
-        s.send_message(msg)
+    if SMTP_USER:
+        s.login(SMTP_USER, SMTP_PASS)
+    s.send_message(msg)
+    s.quit()
 
 
 # ===========================================================================
