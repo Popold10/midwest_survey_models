@@ -164,21 +164,22 @@ def ask_ollama(summary):
 # 4. Envoi du mail
 # ===========================================================================
 def send_email(subject, body):
-    msg = EmailMessage()
-    msg["Subject"] = subject
-    msg["From"] = SMTP_FROM
-    msg["To"] = SMTP_TO
-    msg.set_content(body)
-    if SMTP_PORT == 465:
-        s = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=30)
-    else:
-        s = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=30)
-        if SMTP_TLS:
-            s.starttls()
-    if SMTP_USER:
-        s.login(SMTP_USER, SMTP_PASS)
-    s.send_message(msg)
-    s.quit()
+    payload = {
+        "sender": {"name": SENDER_NAME, "email": SENDER_EMAIL},
+        "to": [{"email": TO_EMAIL, "name": TO_NAME}],
+        "subject": subject,
+        "textContent": body,
+    }
+    headers = {
+        "api-key": BREVO_API_KEY,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    r = requests.post("https://api.brevo.com/v3/smtp/email",
+                      json=payload, headers=headers, timeout=30)
+    if not r.ok:
+        print("REPONSE BREVO:", r.status_code, r.text)
+    r.raise_for_status()
 
 
 # ===========================================================================
